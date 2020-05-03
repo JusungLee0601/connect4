@@ -235,8 +235,36 @@ transition[Board] moveZeroGrav[r: Row, c: Column] {
     not finished[this]
 }
 
+transition[Board] moveIntel[r: Row, c: Column] {
+    not r->c in (p1 + p2)
+
+    some r.prev_row implies (r.prev_row)->c in (p1 + p2) //GRAVITY
+    
+    p1_turn[this] implies {
+        some a: Row | some b: Column | {
+            not a->b in (p1 + p2)
+            some a.prev_row implies (a.prev_row)->b in (p1 + p2)
+            won[p1 + a->b]
+        } implies r = a and c = b
+        p1' = p1 + r->c
+        p2' = p2
+    }
+    p2_turn[this] implies {
+        some a: Row | some b: Column | {
+            not a->b in (p1 + p2)
+            some a.prev_row implies (a.prev_row)->b in (p1 + p2)
+            won[p2 + a->b]
+        } implies r = a and c = b
+        p2' = p2 + r->c
+        p1' = p1
+    }
+
+    not finished[this]
+}
+
+
 transition[Board] game {
-    some r: Row | some c: Column | move[this, this', r, c]
+    some r: Row | some c: Column | moveIntel[this, this', r, c]
 }
 
 transition[Board] gameZeroGrav {
@@ -246,6 +274,6 @@ transition[Board] gameZeroGrav {
 trace<|Board, initialBoard, game, _|> T {}
 
 run<|T|> {wellformed some b: Board | finished[b]}
-    for exactly 4 Row, exactly 4 Column, exactly 7 Board
+    for exactly 4 Row, exactly 4 Column, exactly 6 Board
 
 //run {wellformed} for exactly 4 Row, exactly 4 Column, exactly 1 Board
