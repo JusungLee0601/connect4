@@ -289,7 +289,7 @@ pred invariant1 {
 } 
 
 test expect {
-    --INVAR1: <|T|> {not invariant1} for 5 Ref, 4 LinkedList is unsat
+    --INVAR1: <|T|> {not invariant1} for ... is unsat
 }
 
 pred invariant2 {
@@ -302,7 +302,7 @@ pred invariant2 {
 } 
 
 test expect {
-    --INVAR2: <|T|> {not invariant2} for 5 Ref, 4 LinkedList is unsat
+    --INVAR2: <|T|> {not invariant2} for ... is unsat
 }
 
 pred invariant3 {
@@ -311,6 +311,6 @@ pred invariant3 {
 } 
 
 test expect {
-    --INVAR3: <|T|> {not invariant2} for 5 Ref, 4 LinkedList is unsat
+    --INVAR3: <|T|> {not invariant3} for ... is unsat
 }
     
