@@ -277,3 +277,40 @@ run<|T|> {wellformed some b: Board | finished[b]}
     for exactly 4 Row, exactly 4 Column, exactly 6 Board
 
 //run {wellformed} for exactly 4 Row, exactly 4 Column, exactly 1 Board
+
+----------------Invariants----------------
+
+pred invariant1 {
+  -- (1) At the start of the game, p1 and p2 indices should be empty
+  initialBoard implies {
+    no p1
+    no p2
+  }
+} 
+
+test expect {
+    --INVAR1: <|T|> {not invariant1} for 5 Ref, 4 LinkedList is unsat
+}
+
+pred invariant2 {
+  -- (2) Assuming there is gravity, you can't place into a spot without a piece below it
+  all s: LinkedList | 
+    no s.ghost implies {
+      no s.start
+      no s.end
+    }
+} 
+
+test expect {
+    --INVAR2: <|T|> {not invariant2} for 5 Ref, 4 LinkedList is unsat
+}
+
+pred invariant3 {
+  -- (3) Two players cannot have put pieces into the same index
+  no Board.p1 & Board.p2
+} 
+
+test expect {
+    --INVAR3: <|T|> {not invariant2} for 5 Ref, 4 LinkedList is unsat
+}
+    
