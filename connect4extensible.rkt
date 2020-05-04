@@ -12,8 +12,6 @@ sig Column {
     next_col: lone Column
 }
 
-//sig Player {moves: set Row->Column}
-
 sig Board {
     p1: set Row->Column,
     p2: set Row->Column
@@ -43,14 +41,6 @@ pred wellformed {
     no Board.p1 & Board.p2 //test if necessary?
 }
 
-//Checks that given board complies with gravity constrictions
-//pred valid_gravity[b: Board] {
-//    //For every move between both players
-//    all a: (p1.moves + p2.moves) | {
-//        
-//    }
-//}
-
 ----------------Turns----------------
 
 //p1's turn if both players have the same # of moves
@@ -63,6 +53,7 @@ pred p2_turn[b: Board] {
     subtract[#(b.p1),1] = #(b.p2)
 }
 
+//always a player's turn, no extra turns
 pred valid[b: Board] {
     p1_turn[b] or p2_turn[b]
 }
@@ -193,7 +184,23 @@ expect {
 
 //Define initial state of the game
 state[Board] initialBoard {
-    no p1 //No moves have been made yet
+    no p1
+    no p2
+}
+
+//Initial starts in center
+state[Board] centerStart {
+    one a: Row | no a.prev_row and a in p1.Column 
+    one b: Column | no b.prev_col and b.next_col in Row.p1 
+    #p1 = 1
+    no p2
+}
+
+//Initial starts in left corner
+state[Board] cornerStart {
+    one a: Row | no a.prev_row and a in p1.Column //First row has no previous
+    one b: Column | no b.prev_col and b in Row.p1 //Last row has no next
+    #p1 = 1
     no p2
 }
 
@@ -262,18 +269,29 @@ transition[Board] moveIntel[r: Row, c: Column] {
     not finished[this]
 }
 
-
+//random moves
 transition[Board] game {
-    some r: Row | some c: Column | moveIntel[this, this', r, c]
+    some r: Row | some c: Column | move[this, this', r, c]
 }
 
+//moves can be placed anywhere, not "fall"
 transition[Board] gameZeroGrav {
     some r: Row | some c: Column | moveZeroGrav[this, this', r, c]
 }
 
-trace<|Board, initialBoard, game, _|> T {}
+//players end games if option available
+transition[Board] gameIntel {
+    some r: Row | some c: Column | moveIntel[this, this', r, c]
+}
 
-run<|T|> {wellformed some b: Board | finished[b]}
-    for exactly 4 Row, exactly 4 Column, exactly 6 Board
+trace<|Board, initialBoard, game, _|> Pure {} //start anywhere, random moves
+trace<|Board, centerStart, game, _|> CenterStartPure {} //start center, random moves
+trace<|Board, cornerStart, game, _|> CornerStartPure {} //start left corner, random moves
+
+-------------------Trace Tests-----------------------
+
+//run<|Pure|> {wellformed some b: Board | finished[b]} for exactly 3 Row, exactly 3 Column, exactly 6 Board
+
+run<|CornerStartPure|> {wellformed some b: Board | won[b.p1]} for exactly 3 Row, exactly 3 Column, exactly 6 Board
 
 //run {wellformed} for exactly 4 Row, exactly 4 Column, exactly 1 Board
